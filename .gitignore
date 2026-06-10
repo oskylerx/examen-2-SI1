@@ -1,0 +1,84 @@
+###############################################################################
+# Laravel + Vite - .gitignore
+###############################################################################
+
+# ─── Variables de entorno ─────────────────────────────────────────────────────
+.env
+.env.*
+!.env.example
+
+# ─── Dependencias ─────────────────────────────────────────────────────────────
+/vendor/
+/node_modules/
+
+# ─── Build / Assets compilados ────────────────────────────────────────────────
+/public/build/
+/public/hot
+/public/storage
+/public/fonts-manifest.dev.json
+
+# ─── Storage de Laravel ───────────────────────────────────────────────────────
+/storage/*.key
+/storage/pail/
+/storage/logs/
+/storage/framework/cache/
+/storage/framework/sessions/
+/storage/framework/views/
+/storage/app/public/
+
+# ─── Cache y temporales de Laravel ───────────────────────────────────────────
+bootstrap/cache/*.php
+.phpunit.result.cache
+/.phpunit.cache/
+
+# ─── Logs ────────────────────────────────────────────────────────────────────
+*.log
+
+# ─── IDEs y editores ─────────────────────────────────────────────────────────
+/.idea/
+/.vscode/
+/.zed/
+/.nova/
+/.cursor/
+/.codex/
+.phpactor.json
+_ide_helper.php
+_ide_helper_models.php
+.phpstorm.meta.php
+
+# ─── Homestead / Vagrant ─────────────────────────────────────────────────────
+Homestead.json
+Homestead.yaml
+.vagrant/
+
+# ─── Auth / Claves ───────────────────────────────────────────────────────────
+/auth.json
+*.pem
+*.key
+
+# ─── Sistemas operativos ─────────────────────────────────────────────────────
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+Thumbs.db
+ehthumbs.db
+desktop.ini
+
+# ─── npm / Node ───────────────────────────────────────────────────────────────
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# ─── Tests ───────────────────────────────────────────────────────────────────
+/coverage/
+.phpunit.cache
+
+# ─── Backup y temporales ─────────────────────────────────────────────────────
+*.bak
+*.tmp
+*.swp
+*.swo
+*~
