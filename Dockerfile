@@ -1,6 +1,5 @@
 FROM php:8.4-fpm-alpine
 
-# Instalar dependencias del sistema
 RUN apk add --no-cache \
     nginx \
     curl \
@@ -13,26 +12,27 @@ RUN apk add --no-cache \
     oniguruma-dev \
     postgresql-dev
 
-# Instalar extensiones PHP necesarias
 RUN docker-php-ext-install pdo pdo_mysql pdo_pgsql bcmath gd zip
 
-# Directorio de trabajo
 WORKDIR /var/www/html
 
-# Copiar Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# Copiar proyecto
 COPY . .
 
-# Instalar dependencias Laravel
 RUN composer install --no-dev --optimize-autoloader --no-interaction
+
+# Crear carpetas necesarias para Laravel
+RUN mkdir -p storage/framework/cache \
+    storage/framework/sessions \
+    storage/framework/views \
+    storage/logs \
+    bootstrap/cache
 
 # Permisos Laravel
 RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache \
     && chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
 
-# Configuración Nginx para Laravel
 RUN echo 'server { \
     listen 80; \
     server_name _; \
