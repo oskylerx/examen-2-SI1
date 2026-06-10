@@ -1,34 +1,41 @@
-FROM php:8.2-fpm-alpine
+FROM php:8.4-fpm-alpine
 
-# Instalar extensiones de PHP necesarias para Laravel y herramientas
+# Instalar dependencias del sistema
 RUN apk add --no-cache \
     nginx \
-    supervisor \
     curl \
     libpng-dev \
     libxml2-dev \
+    libzip-dev \
     zip \
     unzip \
-    git
+    git \
+    oniguruma-dev \
+    postgresql-dev
 
-RUN docker-php-ext-install pdo pdo_mysql bcmath gd
+# Instalar extensiones PHP necesarias
+RUN docker-php-ext-install pdo pdo_mysql pdo_pgsql bcmath gd zip
 
-# Configurar Directorio de Trabajo
+# Directorio de trabajo
 WORKDIR /var/www/html
 
-# Copiar el proyecto
+# Copiar Composer
+COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+
+# Copiar proyecto
 COPY . .
 
-# Instalar Composer
-COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+# Instalar dependencias Laravel
 RUN composer install --no-dev --optimize-autoloader --no-interaction
 
-# Configurar permisos para Laravel
-RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
+# Permisos Laravel
+RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache \
+    && chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
 
-# Configuración básica de Nginx para Laravel
+# Configuración Nginx para Laravel
 RUN echo 'server { \
     listen 80; \
+    server_name _; \
     root /var/www/html/public; \
     index index.php index.html; \
     location / { \
@@ -40,9 +47,11 @@ RUN echo 'server { \
         fastcgi_index index.php; \
         fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name; \
     } \
+    location ~ /\.ht { \
+        deny all; \
+    } \
 }' > /etc/nginx/http.d/default.conf
 
 EXPOSE 80
 
-# Iniciar Nginx y PHP-FPM juntos
 CMD php-fpm -D && nginx -g "daemon off;"
