@@ -2,14 +2,19 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\User;
-use App\Models\Rol;
-use App\Models\Postulante;
+use App\Mail\CredencialesPostulanteMail;
 use App\Models\Carrera;
+use App\Models\DocumentoPostulante;
 use App\Models\Grupo;
+use App\Models\Postulante;
+use App\Models\Rol;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 
 class PostulanteController extends Controller
 {
@@ -136,7 +141,21 @@ class PostulanteController extends Controller
 
             $this->actualizarPostulante($request, $postulante);
 
-            $this->activarUsuarioSiAceptado($request, $postulante);
+            // $this->activarUsuarioSiAceptado($request, $postulante);
+
+            if ($request->estado_inscripcion === 'aceptado') {
+                if (! $this->tieneTodosDocumentosValidados($postulante)) {
+                    throw ValidationException::withMessages([
+                        'estado_inscripcion' => 'No se puede aceptar al postulante. Primero deben estar validados todos sus documentos.',
+                    ]);
+                }
+
+                $this->activarUsuarioYEnviarCredenciales($postulante);
+            } else {
+                $postulante->user?->update([
+                    'estado' => 'inactivo',
+                ]);
+            }
         });
 
         return redirect()
@@ -195,11 +214,11 @@ class PostulanteController extends Controller
     private function validarDatosActualizacion(Request $request, Postulante $postulante): void
     {
         $request->validate([
-            'ci' => 'required|string|max:20|unique:users,ci,' . $postulante->user_id,
+            'ci' => 'required|string|max:20|unique:users,ci,'.$postulante->user_id,
             'name' => 'required|string|max:100',
             'apellido' => 'required|string|max:100',
             'telefono' => 'nullable|string|max:30',
-            'email' => 'required|email|max:150|unique:users,email,' . $postulante->user_id,
+            'email' => 'required|email|max:150|unique:users,email,'.$postulante->user_id,
 
             'grupo_id' => 'nullable|exists:grupo,id',
             'primera_opcion_carrera_id' => 'required|exists:carrera,id',
@@ -229,7 +248,7 @@ class PostulanteController extends Controller
     {
         $rolPostulante = Rol::where('nombre', 'Postulante')->first();
 
-        if (!$rolPostulante) {
+        if (! $rolPostulante) {
             abort(500, 'No existe el rol Postulante en la tabla roles.');
         }
 
@@ -291,16 +310,55 @@ class PostulanteController extends Controller
         ]);
     }
 
+    // private function activarUsuarioSiAceptado(Request $request, Postulante $postulante): void
+    // {
+    //     if ($request->estado_inscripcion === 'aceptado') {
+    //         $postulante->user->update([
+    //             'estado' => 'activo',
+    //         ]);
+    //     }
+
+    //     if (in_array($request->estado_inscripcion, ['pendiente', 'observado', 'rechazado'])) {
+    //         $postulante->user->update([
+    //             'estado' => 'inactivo',
+    //         ]);
+    //     }
+    // }
+    private function generarPasswordTemporal(): string
+    {
+        return 'CUP-'.strtoupper(Str::random(6));
+    }
+
     private function activarUsuarioSiAceptado(Request $request, Postulante $postulante): void
     {
+        $user = $postulante->user;
+
+        if (! $user) {
+            return;
+        }
+
         if ($request->estado_inscripcion === 'aceptado') {
-            $postulante->user->update([
-                'estado' => 'activo',
-            ]);
+
+            if ($user->estado !== 'activo') {
+                $passwordTemporal = $this->generarPasswordTemporal();
+
+                $user->update([
+                    'estado' => 'activo',
+                    'password' => Hash::make($passwordTemporal),
+                ]);
+
+                if ($user->email) {
+                    Mail::to($user->email)->send(
+                        new CredencialesPostulanteMail($postulante, $passwordTemporal)
+                    );
+                }
+            }
+
+            return;
         }
 
         if (in_array($request->estado_inscripcion, ['pendiente', 'observado', 'rechazado'])) {
-            $postulante->user->update([
+            $user->update([
                 'estado' => 'inactivo',
             ]);
         }
@@ -311,45 +369,176 @@ class PostulanteController extends Controller
         $anio = now()->format('y');
         $gestion = '1';
 
-        $prefijo = $anio . $gestion;
+        $prefijo = $anio.$gestion;
 
-        $ultimoUsuario = User::where('username', 'like', $prefijo . '%')
+        $ultimoUsuario = User::where('username', 'like', $prefijo.'%')
             ->orderBy('username', 'desc')
             ->first();
 
-        if (!$ultimoUsuario) {
+        if (! $ultimoUsuario) {
             $correlativo = 1;
         } else {
             $ultimoCorrelativo = (int) substr($ultimoUsuario->username, -5);
             $correlativo = $ultimoCorrelativo + 1;
         }
 
-        return $prefijo . str_pad($correlativo, 5, '0', STR_PAD_LEFT);
+        return $prefijo.str_pad($correlativo, 5, '0', STR_PAD_LEFT);
     }
 
     /**
-     * Actualiza el estado de inscripción directamente desde la tabla y ejecuta 
+     * Actualiza el estado de inscripción directamente desde la tabla y ejecuta
      * las reglas de activación/desactivación del usuario vinculado.
      */
-    public function updateEstado(Request $request, $id) 
+    // public function updateEstado(Request $request, $id)
+    // {
+    //     $request->validate([
+    //         'estado_inscripcion' => 'required|in:pendiente,observado,aceptado,rechazado',
+    //     ]);
+
+    //     // Cargamos el postulante junto con su usuario para poder modificarlo
+    //     $postulante = Postulante::with('user')->findOrFail($id);
+
+    //     DB::transaction(function () use ($request, $postulante) {
+    //         // Actualizamos la inscripción
+    //         $postulante->update([
+    //             'estado_inscripcion' => $request->estado_inscripcion,
+    //         ]);
+
+    //         // Evaluamos la regla: 'aceptado' -> activo, los demás -> inactivo
+    //         $this->activarUsuarioSiAceptado($request, $postulante);
+    //     });
+
+    //     return back()->with('success', 'Estados del postulante y del usuario actualizados correctamente.');
+    // }
+
+    public function documentos(Postulante $postulante)
+    {
+        $postulante->load([
+            'user',
+            'documentos',
+            'primeraOpcionCarrera',
+            'segundaOpcionCarrera',
+        ]);
+
+        return view('postulantes-documentos', compact('postulante'));
+    }
+
+    public function actualizarDocumento(Request $request, Postulante $postulante, DocumentoPostulante $documento)
+    {
+        if ($documento->postulante_id !== $postulante->id) {
+            abort(404);
+        }
+
+        $request->validate([
+            'estado' => 'required|in:pendiente,validado,observado,rechazado',
+            'otro' => 'nullable|string|max:1000',
+        ]);
+
+        $documento->update([
+            'estado' => $request->estado,
+            'otro' => $request->otro,
+        ]);
+
+        $this->aceptarPostulanteSiDocumentosValidados($postulante);
+
+        return redirect()
+            ->route('postulantes.documentos', $postulante)
+            ->with('success', 'Documento actualizado correctamente.');
+    }
+
+    public function updateEstado(Request $request, Postulante $postulante)
     {
         $request->validate([
-            'estado_inscripcion' => 'required|in:pendiente,observado,aceptado,rechazado'
+            'estado_inscripcion' => 'required|in:pendiente,observado,aceptado,rechazado',
         ]);
-        
-        // Cargamos el postulante junto con su usuario para poder modificarlo
-        $postulante = Postulante::with('user')->findOrFail($id);
-        
-        DB::transaction(function () use ($request, $postulante) {
-            // Actualizamos la inscripción
-            $postulante->update([
-                'estado_inscripcion' => $request->estado_inscripcion
-            ]);
-            
-            // Evaluamos la regla: 'aceptado' -> activo, los demás -> inactivo
-            $this->activarUsuarioSiAceptado($request, $postulante);
-        });
 
-        return back()->with('success', 'Estados del postulante y del usuario actualizados correctamente.');
+        if ($request->estado_inscripcion === 'aceptado' && ! $this->tieneTodosDocumentosValidados($postulante)) {
+            return redirect()
+                ->route('postulantes.index')
+                ->withErrors('No se puede aceptar al postulante. Primero deben estar validados todos sus documentos.');
+        }
+
+        $postulante->update([
+            'estado_inscripcion' => $request->estado_inscripcion,
+        ]);
+
+        if ($request->estado_inscripcion === 'aceptado') {
+            $this->activarUsuarioYEnviarCredenciales($postulante);
+        } else {
+            $postulante->user?->update([
+                'estado' => 'inactivo',
+            ]);
+        }
+
+        return redirect()
+            ->route('postulantes.index')
+            ->with('success', 'Estado actualizado correctamente.');
+    }
+
+    private function aceptarPostulanteSiDocumentosValidados(Postulante $postulante): void
+    {
+        $postulante->load('documentos', 'user');
+
+        if (! $this->tieneTodosDocumentosValidados($postulante)) {
+            return;
+        }
+
+        if ($postulante->estado_inscripcion !== 'aceptado') {
+            $postulante->update([
+                'estado_inscripcion' => 'aceptado',
+            ]);
+        }
+
+        $this->activarUsuarioYEnviarCredenciales($postulante);
+    }
+
+    private function tieneTodosDocumentosValidados(Postulante $postulante): bool
+    {
+        $tiposRequeridos = [
+            'comprobante_pago',
+            'titulo_bachiller',
+            'cedula_identidad',
+            'boletin_sexto',
+        ];
+
+        $documentos = $postulante->documentos()
+            ->whereIn('tipo', $tiposRequeridos)
+            ->get();
+
+        if ($documentos->count() < count($tiposRequeridos)) {
+            return false;
+        }
+
+        return $documentos->every(function ($documento) {
+            return $documento->estado === 'validado';
+        });
+    }
+
+    private function activarUsuarioYEnviarCredenciales(Postulante $postulante): void
+    {
+        $postulante->load('user');
+
+        $user = $postulante->user;
+
+        if (! $user) {
+            return;
+        }
+
+        if ($user->estado === 'activo') {
+            return;
+        }
+
+        $passwordTemporal = $this->generarPasswordTemporal();
+
+        $user->update([
+            'estado' => 'activo',
+            'password' => Hash::make($passwordTemporal),
+        ]);
+
+        if ($user->email) {
+            Mail::to($user->email)->send(
+                new CredencialesPostulanteMail($postulante, $passwordTemporal)
+            );
+        }
     }
 }

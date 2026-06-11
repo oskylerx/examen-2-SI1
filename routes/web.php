@@ -1,11 +1,26 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\DocenteController;
 use App\Http\Controllers\PostulanteController;
+use App\Http\Controllers\ReportePostulanteController;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Route;
 
+Route::get('/probar-correo', function () {
+    Mail::raw('Correo de prueba desde Laravel CUP', function ($message) {
+        $message->to('oscarcrodri3@gmail.com')
+            ->subject('Prueba de correo CUP');
+    });
+
+    return 'Correo enviado correctamente';
+});
 
 Route::get('/', fn () => redirect()->route('login'));
+
+Route::get('/preinscripcion', function () {
+    return view('preinscripcion');
+})->name('preinscripcion');
 
 // //////////////////////////////////////////////////////////////////////////
 
@@ -30,13 +45,31 @@ Route::middleware(['auth', 'role:Administrador'])->group(function () {
     Route::get('/dashboard/admin', function () {
         return view('dashboards.admin');
     })->name('dashboard.admin');
-    Route::resource('postulantes', PostulanteController::class);// CU03 Gestionar Postulante
+
+    Route::get('postulantes/{postulante}/documentos', [PostulanteController::class, 'documentos'])
+        ->name('postulantes.documentos');
+
+    Route::patch('postulantes/{postulante}/documentos/{documento}', [PostulanteController::class, 'actualizarDocumento'])
+        ->name('postulantes.documentos.update');
+
+    Route::patch('postulantes/{postulante}/estado', [PostulanteController::class, 'updateEstado'])
+        ->name('postulantes.updateEstado');
+    Route::resource('postulantes', PostulanteController::class); // CU03 Gestionar Postulante
     Route::patch('/postulantes/{id}/estado', [PostulanteController::class, 'updateEstado'])->name('postulantes.updateEstado');
     // CU04 Gestionar Docente
     // CU05 Asignar Docente a Grupo y Materia
     // CU06 Reporte Cantidad de Grupos
     // CU07 Lista General de Postulantes
 });
+////////////////////////////////////////////////////////////////////////////
+Route::middleware(['auth', 'role:Administrador,Coordinador'])->group(function () {
+    Route::get('/docentes', [DocenteController::class, 'index'])
+        ->name('docentes.index');
+});
+
+Route::get('/reportes/postulantes/lista-general', [ReportePostulanteController::class, 'index'])
+    ->middleware('auth')
+    ->name('reportes.postulantes.lista-general');
 
 // //////////////////////   COORDINADOR    ///////////////////////////////////////////////////
 
@@ -44,7 +77,7 @@ Route::middleware(['auth', 'role:Coordinador'])->group(function () {
     Route::get('/dashboard/coordinador', function () {
         return view('dashboards.coordinador');
     })->name('dashboard.coordinador');
-
+  
     // CU05 Asignar Docente a Grupo y Materia
     // CU06 Reporte Cantidad de Grupos
     // CU09 Reporte Promedios Generales

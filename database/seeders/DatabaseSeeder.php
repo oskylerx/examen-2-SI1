@@ -14,6 +14,7 @@ class DatabaseSeeder extends Seeder
             // UsuariosPruebaSeeder::class,
             AdminSeeder::class,
             PostulanteSeeder::class,
+            CoordinadorDocentesSeeder::class,
         ]);
     }
 }

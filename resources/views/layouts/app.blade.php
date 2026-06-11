@@ -202,16 +202,17 @@
                 @if(auth()->user()->rol->nombre === 'Administrador')
                     <a href="{{ route('dashboard.admin') }}">Dashboard</a>
                     <a href="{{ route('postulantes.index') }}">Gestionar postulantes</a>
-                    <a href="#">Gestionar docentes</a>
+                    <a href="{{ route('docentes.index') }}">Gestionar docentes</a>
                     <a href="#">Asignación académica</a>
-                    <a href="#">Reportes</a>
+                    <a href="{{ route('reportes.postulantes.lista-general') }}">Reportes</a>
                 @endif
 
                 @if(auth()->user()->rol->nombre === 'Coordinador')
                     <a href="{{ route('dashboard.coordinador') }}">Dashboard</a>
-                    <a href="#">Grupos habilitados</a>
+                    <a href="{{ route('docentes.index') }}">Grupos habilitados</a>
                     <a href="#">Asignación docente</a>
                     <a href="#">Reportes académicos</a>
+                    <a href="{{ route('reportes.postulantes.lista-general') }}">Reportes</a>
                 @endif
 
                 @if(auth()->user()->rol->nombre === 'Docente')
