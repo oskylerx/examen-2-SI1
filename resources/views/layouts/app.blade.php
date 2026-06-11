@@ -201,7 +201,7 @@
 
                 @if(auth()->user()->rol->nombre === 'Administrador')
                     <a href="{{ route('dashboard.admin') }}">Dashboard</a>
-                    <a href="#">Gestionar postulantes</a>
+                    <a href="{{ route('postulantes.index') }}">Gestionar postulantes</a>
                     <a href="#">Gestionar docentes</a>
                     <a href="#">Asignación académica</a>
                     <a href="#">Reportes</a>

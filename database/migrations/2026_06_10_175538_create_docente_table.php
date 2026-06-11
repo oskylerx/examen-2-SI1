@@ -17,6 +17,12 @@ return new class extends Migration
                 ->cascadeOnUpdate()
                 ->restrictOnDelete();
 
+            $table->foreignId('coordinador_id')
+                ->nullable()
+                ->constrained('coordinador')
+                ->cascadeOnUpdate()
+                ->nullOnDelete();
+
             $table->string('profesion', 100);
             $table->string('especialidad', 100);
             $table->string('maestria', 150)->nullable();
@@ -25,7 +31,7 @@ return new class extends Migration
             $table->enum('estado_validacion', [
                 'pendiente',
                 'aceptado',
-                'rechazado'
+                'rechazado',
             ])->default('pendiente');
 
             $table->text('observacion')->nullable();

@@ -127,7 +127,7 @@
     <div class="login-container">
         <div class="login-header">
             <h1>Sistema CUP</h1>
-            <p>Examen de Suficiencia Académica</p>
+            <p>Cursos Pre-Universitarios</p>
         </div>
 
         @if ($errors->any())
@@ -177,7 +177,7 @@
 
         <div class="test-user">
             Usuario de prueba: <strong>admin</strong><br>
-            Contraseña: <strong>12345678</strong>
+            Contraseña: <strong>1234</strong>
         </div>
     </div>
 

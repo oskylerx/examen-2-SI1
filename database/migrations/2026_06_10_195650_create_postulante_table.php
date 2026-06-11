@@ -16,21 +16,29 @@ return new class extends Migration
                 ->constrained('users')
                 ->cascadeOnUpdate()
                 ->restrictOnDelete();
+            $table->foreignId('primera_opcion_carrera_id')
+                ->nullable()
+                ->constrained('carrera');
 
+            $table->foreignId('segunda_opcion_carrera_id')
+                ->nullable()
+                ->constrained('carrera');
+            $table->foreignId('grupo_id')
+                ->nullable()
+                ->constrained('grupo')
+                ->cascadeOnUpdate()
+                ->nullOnDelete();
             $table->date('fecha_nacimiento')->nullable();
 
             $table->enum('genero', [
                 'masculino',
                 'femenino',
-                'otro'
+                'otro',
             ])->nullable();
 
             $table->string('direccion', 200)->nullable();
             $table->string('colegio', 150)->nullable();
             $table->string('ciudad', 100)->nullable();
-
-            $table->boolean('titulo_bachiller')->default(false);
-            $table->text('otros_documentos')->nullable();
 
             $table->date('fecha_registro')->nullable();
 
@@ -38,9 +46,9 @@ return new class extends Migration
                 'pendiente',
                 'observado',
                 'aceptado',
-                'rechazado'
+                'rechazado',
             ])->default('pendiente');
-
+            $table->string('observacion', 200)->nullable();
             $table->timestamps();
         });
     }
