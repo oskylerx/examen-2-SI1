@@ -1,7 +1,14 @@
 <?php
 
+use App\Http\Controllers\AsignacionAcademicaController;
+use App\Http\Controllers\AsignacionCupoController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\DocenteCalificacionController;
 use App\Http\Controllers\DocenteController;
+use App\Http\Controllers\DocenteGrupoController;
+use App\Http\Controllers\DocenteResultadoController;
+use App\Http\Controllers\GrupoController;
+use App\Http\Controllers\NotaDocenteController;
 use App\Http\Controllers\PostulanteController;
 use App\Http\Controllers\ReportePostulanteController;
 use Illuminate\Support\Facades\Mail;
@@ -16,7 +23,7 @@ Route::get('/probar-correo', function () {
     return 'Correo enviado correctamente';
 });
 
-Route::get('/', fn () => redirect()->route('login'));
+Route::get('/', fn () => redirect()->route('preinscripcion'));
 
 Route::get('/preinscripcion', function () {
     return view('preinscripcion');
@@ -57,19 +64,24 @@ Route::middleware(['auth', 'role:Administrador'])->group(function () {
     Route::resource('postulantes', PostulanteController::class); // CU03 Gestionar Postulante
     Route::patch('/postulantes/{id}/estado', [PostulanteController::class, 'updateEstado'])->name('postulantes.updateEstado');
     // CU04 Gestionar Docente
-    // CU05 Asignar Docente a Grupo y Materia
-    // CU06 Reporte Cantidad de Grupos
+
+    Route::get('/admin/grupos', [GrupoController::class, 'index'])
+        ->name('admin.grupos'); // CU06 Reporte Cantidad de Grupos
     // CU07 Lista General de Postulantes
+
 });
-////////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////
 Route::middleware(['auth', 'role:Administrador,Coordinador'])->group(function () {
     Route::get('/docentes', [DocenteController::class, 'index'])
         ->name('docentes.index');
+    Route::get('/admin/asignacion-cupos', [AsignacionCupoController::class, 'index'])
+        ->name('admin.asignacion-cupos');
+    Route::get('/admin/asignacion-academica', [AsignacionAcademicaController::class, 'index'])
+        ->name('admin.asignacion-academica'); // CU05 Asignar Docente a Grupo y Materia
+    Route::get('/reportes/postulantes/lista-general', [ReportePostulanteController::class, 'index'])
+        ->middleware('auth')
+        ->name('reportes.postulantes.lista-general');
 });
-
-Route::get('/reportes/postulantes/lista-general', [ReportePostulanteController::class, 'index'])
-    ->middleware('auth')
-    ->name('reportes.postulantes.lista-general');
 
 // //////////////////////   COORDINADOR    ///////////////////////////////////////////////////
 
@@ -77,7 +89,7 @@ Route::middleware(['auth', 'role:Coordinador'])->group(function () {
     Route::get('/dashboard/coordinador', function () {
         return view('dashboards.coordinador');
     })->name('dashboard.coordinador');
-  
+
     // CU05 Asignar Docente a Grupo y Materia
     // CU06 Reporte Cantidad de Grupos
     // CU09 Reporte Promedios Generales
@@ -95,7 +107,14 @@ Route::middleware(['auth', 'role:Docente'])->group(function () {
         return view('dashboards.docente');
     })->name('dashboard.docente');
 
-    // CU08 Registrar 3 Notas por Materia
+    Route::get('/docente/notas', [NotaDocenteController::class, 'index'])
+        ->name('docente.notas'); // CU08 Registrar 3 Notas por Materia
+    Route::get('/docente/mis-grupos', [DocenteGrupoController::class, 'index'])
+        ->name('docente.mis-grupos');
+    Route::get('/docente/calificaciones', [DocenteCalificacionController::class, 'index'])
+        ->name('docente.calificaciones');
+    Route::get('/docente/resultados', [DocenteResultadoController::class, 'index'])
+        ->name('docente.resultados');
 });
 
 // //////////////////////   POSTULANTE    ///////////////////////////////////////////////////

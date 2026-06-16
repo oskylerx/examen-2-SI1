@@ -19,6 +19,7 @@ class AsignacionAcademica extends Model
         'fecha_asignacion',
         'estado',
     ];
+    
 
     public function horario(): BelongsTo
     {

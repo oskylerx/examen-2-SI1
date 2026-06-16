@@ -2,206 +2,260 @@
 
 namespace Database\Seeders;
 
-use App\Models\User;
-use App\Models\Rol;
 use App\Models\Carrera;
+use App\Models\DocumentoPostulante;
+use App\Models\Grupo;
+use App\Models\Pago;
 use App\Models\Postulante;
+use App\Models\User;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 
 class PostulanteSeeder extends Seeder
 {
     public function run(): void
     {
-        $rolPostulante = Rol::where('nombre', 'Postulante')->first();
+        $cantidadPostulantes = 300;
+        $gestion = '2026-1';
+        $cupoMaximoGrupo = 70;
 
-        if (!$rolPostulante) {
-            $this->command->error('No existe el rol Postulante.');
-            return;
+        $rolPostulanteId = DB::table('roles')
+            ->whereRaw('LOWER(nombre) = ?', ['postulante'])
+            ->value('id');
+
+        if (! $rolPostulanteId) {
+            throw new \Exception('No existe el rol Postulante en la tabla roles.');
         }
 
-        $sistemas = Carrera::where('codigo_carrera', '187-4')->first();
-        $informatica = Carrera::where('codigo_carrera', '187-3')->first();
-        $redes = Carrera::where('codigo_carrera', '187-5')->first();
-        $robotica = Carrera::where('codigo_carrera', '187-6')->first();
+        $carreras = Carrera::orderBy('id')->get();
 
-        if (!$sistemas || !$informatica || !$redes || !$robotica) {
-            $this->command->error('Faltan carreras registradas.');
-            return;
+        if ($carreras->isEmpty()) {
+            throw new \Exception('No existen carreras registradas. Primero ejecuta el seeder de carreras.');
         }
 
-        $postulantes = [
-            [
-                'ci' => '90000001',
-                'name' => 'María',
-                'apellido' => 'Gutiérrez Rojas',
-                'telefono' => '70000001',
-                'email' => 'maria.gutierrez@example.com',
-                'fecha_nacimiento' => '2006-03-15',
-                'genero' => 'femenino',
-                'direccion' => 'Barrio Equipetrol',
-                'colegio' => 'Colegio Nacional Florida',
-                'ciudad' => 'Santa Cruz',
-                'primera' => $sistemas->id,
-                'segunda' => $informatica->id,
-            ],
-            [
-                'ci' => '90000002',
-                'name' => 'Juan',
-                'apellido' => 'Pérez Vargas',
-                'telefono' => '70000002',
-                'email' => 'juan.perez@example.com',
-                'fecha_nacimiento' => '2005-11-22',
-                'genero' => 'masculino',
-                'direccion' => 'Av. Alemana',
-                'colegio' => 'Colegio Don Bosco',
-                'ciudad' => 'Santa Cruz',
-                'primera' => $informatica->id,
-                'segunda' => $sistemas->id,
-            ],
-            [
-                'ci' => '90000003',
-                'name' => 'Camila',
-                'apellido' => 'Suárez Mendoza',
-                'telefono' => '70000003',
-                'email' => 'camila.suarez@example.com',
-                'fecha_nacimiento' => '2006-07-09',
-                'genero' => 'femenino',
-                'direccion' => 'Plan 3000',
-                'colegio' => 'Colegio San Agustín',
-                'ciudad' => 'Santa Cruz',
-                'primera' => $redes->id,
-                'segunda' => $informatica->id,
-            ],
-            [
-                'ci' => '90000004',
-                'name' => 'Luis',
-                'apellido' => 'Ribera Ortiz',
-                'telefono' => '70000004',
-                'email' => 'luis.ribera@example.com',
-                'fecha_nacimiento' => '2005-05-30',
-                'genero' => 'masculino',
-                'direccion' => 'Zona Norte',
-                'colegio' => 'Colegio La Salle',
-                'ciudad' => 'Santa Cruz',
-                'primera' => $robotica->id,
-                'segunda' => $sistemas->id,
-            ],
-            [
-                'ci' => '90000005',
-                'name' => 'Andrea',
-                'apellido' => 'Molina Céspedes',
-                'telefono' => '70000005',
-                'email' => 'andrea.molina@example.com',
-                'fecha_nacimiento' => '2006-01-18',
-                'genero' => 'femenino',
-                'direccion' => 'Villa Primero de Mayo',
-                'colegio' => 'Colegio Nacional Junín',
-                'ciudad' => 'Santa Cruz',
-                'primera' => $sistemas->id,
-                'segunda' => $redes->id,
-            ],
-            [
-                'ci' => '90000006',
-                'name' => 'Carlos',
-                'apellido' => 'Fernández López',
-                'telefono' => '70000006',
-                'email' => 'carlos.fernandez@example.com',
-                'fecha_nacimiento' => '2005-09-12',
-                'genero' => 'masculino',
-                'direccion' => 'Av. Beni',
-                'colegio' => 'Colegio Cristo Rey',
-                'ciudad' => 'Santa Cruz',
-                'primera' => $informatica->id,
-                'segunda' => $robotica->id,
-            ],
-            [
-                'ci' => '90000007',
-                'name' => 'Valeria',
-                'apellido' => 'Flores Arancibia',
-                'telefono' => '70000007',
-                'email' => 'valeria.flores@example.com',
-                'fecha_nacimiento' => '2006-12-01',
-                'genero' => 'femenino',
-                'direccion' => 'Doble vía La Guardia',
-                'colegio' => 'Colegio Santa Ana',
-                'ciudad' => 'Santa Cruz',
-                'primera' => $redes->id,
-                'segunda' => $sistemas->id,
-            ],
-            [
-                'ci' => '90000008',
-                'name' => 'Diego',
-                'apellido' => 'Salvatierra Roca',
-                'telefono' => '70000008',
-                'email' => 'diego.salvatierra@example.com',
-                'fecha_nacimiento' => '2005-04-25',
-                'genero' => 'masculino',
-                'direccion' => 'Av. Virgen de Cotoca',
-                'colegio' => 'Colegio Salesiano',
-                'ciudad' => 'Santa Cruz',
-                'primera' => $robotica->id,
-                'segunda' => $redes->id,
-            ],
-            [
-                'ci' => '90000009',
-                'name' => 'Sofía',
-                'apellido' => 'Núñez Pereira',
-                'telefono' => '70000009',
-                'email' => 'sofia.nunez@example.com',
-                'fecha_nacimiento' => '2006-10-10',
-                'genero' => 'femenino',
-                'direccion' => 'Barrio Hamacas',
-                'colegio' => 'Colegio María Auxiliadora',
-                'ciudad' => 'Santa Cruz',
-                'primera' => $sistemas->id,
-                'segunda' => $robotica->id,
-            ],
-            [
-                'ci' => '90000010',
-                'name' => 'Mateo',
-                'apellido' => 'Castro Villarroel',
-                'telefono' => '70000010',
-                'email' => 'mateo.castro@example.com',
-                'fecha_nacimiento' => '2005-08-14',
-                'genero' => 'masculino',
-                'direccion' => 'Av. Santos Dumont',
-                'colegio' => 'Colegio Domingo Savio',
-                'ciudad' => 'Santa Cruz',
-                'primera' => $informatica->id,
-                'segunda' => $redes->id,
-            ],
+        $this->asegurarGrupos($carreras, $cantidadPostulantes, $gestion, $cupoMaximoGrupo);
+
+        $grupos = Grupo::with('carrera')
+            ->where('activo', true)
+            ->where('gestion', $gestion)
+            ->orderBy('id')
+            ->get();
+
+        if ($grupos->isEmpty()) {
+            $grupos = Grupo::with('carrera')
+                ->where('activo', true)
+                ->orderBy('id')
+                ->get();
+        }
+
+        if ($grupos->isEmpty()) {
+            throw new \Exception('No existen grupos activos para asignar postulantes.');
+        }
+
+        $nombresMasculinos = [
+            'Carlos', 'Luis', 'Juan', 'Pedro', 'Miguel', 'Jorge', 'Diego', 'Fernando',
+            'Andres', 'Marco', 'Raul', 'Daniel', 'Jose', 'Sergio', 'Hugo',
         ];
 
-        foreach ($postulantes as $index => $data) {
-            $username = '261' . str_pad($index + 1, 5, '0', STR_PAD_LEFT);
+        $nombresFemeninos = [
+            'Maria', 'Ana', 'Carla', 'Lucia', 'Gabriela', 'Daniela', 'Valeria', 'Sofia',
+            'Camila', 'Fernanda', 'Paola', 'Andrea', 'Laura', 'Mariana', 'Natalia',
+        ];
 
-            $user = User::create([
-                'rol_id' => $rolPostulante->id,
-                'username' => $username,
-                'ci' => $data['ci'],
-                'name' => $data['name'],
-                'apellido' => $data['apellido'],
-                'telefono' => $data['telefono'],
-                'email' => $data['email'],
-                'password' => Hash::make('1234'),
-                'estado' => 'inactivo',
-            ]);
+        $apellidos = [
+            'Rodriguez', 'Gonzales', 'Mamani', 'Vargas', 'Rojas', 'Lopez', 'Perez',
+            'Flores', 'Gutierrez', 'Sanchez', 'Morales', 'Ortiz', 'Aguilera',
+            'Rivero', 'Suarez', 'Castro', 'Romero', 'Torrez', 'Mendoza', 'Salazar',
+        ];
 
-            Postulante::create([
-                'user_id' => $user->id,
-                'grupo_id' => null,
-                'primera_opcion_carrera_id' => $data['primera'],
-                'segunda_opcion_carrera_id' => $data['segunda'],
-                'fecha_nacimiento' => $data['fecha_nacimiento'],
-                'genero' => $data['genero'],
-                'direccion' => $data['direccion'],
-                'colegio' => $data['colegio'],
-                'ciudad' => $data['ciudad'],
-                'fecha_registro' => now()->toDateString(),
-                'estado_inscripcion' => 'pendiente',
-                'observacion' => null,
-            ]);
+        $ciudades = [
+            'Santa Cruz', 'Montero', 'Warnes', 'La Guardia', 'Cotoca',
+            'El Torno', 'Portachuelo', 'Yapacani',
+        ];
+
+        $colegios = [
+            'Colegio Nacional Florida',
+            'Colegio La Salle',
+            'Colegio San Agustin',
+            'Colegio Nacional Junin',
+            'Colegio Don Bosco',
+            'Colegio Santa Ana',
+            'Colegio 24 de Septiembre',
+            'Colegio Nacional Bolivar',
+        ];
+
+        DB::transaction(function () use (
+            $cantidadPostulantes,
+            $rolPostulanteId,
+            $grupos,
+            $carreras,
+            $nombresMasculinos,
+            $nombresFemeninos,
+            $apellidos,
+            $ciudades,
+            $colegios
+        ) {
+            for ($index = 0; $index < $cantidadPostulantes; $index++) {
+                $numero = $index + 1;
+
+                $username = '261'.str_pad($numero, 5, '0', STR_PAD_LEFT);
+                $ci = (string) (9100000 + $numero);
+
+                $genero = $numero % 2 === 0 ? 'femenino' : 'masculino';
+
+                $nombre = $genero === 'femenino'
+                    ? $nombresFemeninos[$index % count($nombresFemeninos)]
+                    : $nombresMasculinos[$index % count($nombresMasculinos)];
+
+                $apellidoPaterno = $apellidos[$index % count($apellidos)];
+                $apellidoMaterno = $apellidos[($index + 5) % count($apellidos)];
+                $apellidoCompleto = $apellidoPaterno.' '.$apellidoMaterno;
+
+                $indiceGrupo = intdiv($index, 70);
+                $grupo = $grupos[$indiceGrupo] ?? $grupos->last();
+
+                $primeraCarreraId = $grupo->carrera_id ?: $carreras[$index % $carreras->count()]->id;
+
+                $segundaCarrera = $carreras
+                    ->where('id', '!=', $primeraCarreraId)
+                    ->values()
+                    ->get(0);
+
+                $segundaCarreraId = $segundaCarrera?->id;
+
+                $user = User::updateOrCreate(
+                    [
+                        'username' => $username,
+                    ],
+                    [
+                        'rol_id' => $rolPostulanteId,
+                        'ci' => $ci,
+                        'name' => $nombre,
+                        'apellido' => $apellidoCompleto,
+                        'telefono' => '7'.str_pad((string) $numero, 7, '0', STR_PAD_LEFT),
+                        'email' => strtolower($username).'@cup.test',
+                        'password' => Hash::make('1234'),
+                        'estado' => 'activo',
+                    ]
+                );
+
+                $postulante = Postulante::updateOrCreate(
+                    [
+                        'user_id' => $user->id,
+                    ],
+                    [
+                        'grupo_id' => $grupo->id,
+                        'primera_opcion_carrera_id' => $primeraCarreraId,
+                        'segunda_opcion_carrera_id' => $segundaCarreraId,
+                        'fecha_nacimiento' => now()->subYears(18)->subDays($numero)->format('Y-m-d'),
+                        'genero' => $genero,
+                        'direccion' => 'Barrio Universitario, calle '.$numero,
+                        'colegio' => $colegios[$index % count($colegios)],
+                        'ciudad' => $ciudades[$index % count($ciudades)],
+                        'fecha_registro' => now()->format('Y-m-d'),
+                        'estado_inscripcion' => 'aceptado',
+                        'observacion' => 'Postulante generado automáticamente con documentación completa.',
+                    ]
+                );
+
+                Pago::updateOrCreate(
+                    [
+                        'postulante_id' => $postulante->id,
+                        'concepto' => 'Pago CUP',
+                    ],
+                    [
+                        'fecha_pago' => now()->format('Y-m-d'),
+                        'monto' => 700.00,
+                        'estado' => 'pagado',
+                    ]
+                );
+
+                $this->crearDocumento(
+                    $postulante->id,
+                    $username,
+                    'Título de Bachiller',
+                    'titulo_bachiller',
+                    'titulo_bachiller.pdf'
+                );
+
+                $this->crearDocumento(
+                    $postulante->id,
+                    $username,
+                    'Cédula de Identidad',
+                    'cedula_identidad',
+                    'cedula_identidad.pdf'
+                );
+
+                $this->crearDocumento(
+                    $postulante->id,
+                    $username,
+                    'Boletín de Sexto de Secundaria',
+                    'boletin_sexto',
+                    'boletin_sexto.pdf'
+                );
+
+                $this->crearDocumento(
+                    $postulante->id,
+                    $username,
+                    'Comprobante de Pago',
+                    'comprobante_pago',
+                    'comprobante_pago.pdf'
+                );
+            }
+        });
+    }
+
+    private function crearDocumento($postulanteId, $username, $nombre, $tipo, $archivo): void
+    {
+        DocumentoPostulante::updateOrCreate(
+            [
+                'postulante_id' => $postulanteId,
+                'tipo' => $tipo,
+            ],
+            [
+                'nombre' => $nombre,
+                'archivo' => 'documentos/postulantes/'.$username.'/'.$archivo,
+                'otro' => null,
+                'estado' => 'validado',
+                'fecha_subida' => now()->format('Y-m-d'),
+            ]
+        );
+    }
+
+    private function asegurarGrupos($carreras, $cantidadPostulantes, $gestion, $cupoMaximoGrupo): void
+    {
+        $gruposNecesarios = (int) ceil($cantidadPostulantes / $cupoMaximoGrupo);
+
+        $gruposActuales = Grupo::where('activo', true)
+            ->where('gestion', $gestion)
+            ->count();
+
+        if ($gruposActuales >= $gruposNecesarios) {
+            return;
+        }
+
+        $faltantes = $gruposNecesarios - $gruposActuales;
+
+        for ($i = 1; $i <= $faltantes; $i++) {
+            $numeroGrupo = $gruposActuales + $i;
+            $letra = chr(64 + $numeroGrupo);
+
+            $carrera = $carreras[($numeroGrupo - 1) % $carreras->count()];
+
+            Grupo::updateOrCreate(
+                [
+                    'nombre' => 'Grupo '.$letra.' - '.($carrera->codigo_carrera ?? $carrera->id),
+                    'gestion' => $gestion,
+                ],
+                [
+                    'docente_id' => null,
+                    'coordinador_id' => null,
+                    'carrera_id' => $carrera->id,
+                    'cupos_maximo' => $cupoMaximoGrupo,
+                    'activo' => true,
+                ]
+            );
         }
     }
 }

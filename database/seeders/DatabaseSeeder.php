@@ -15,6 +15,10 @@ class DatabaseSeeder extends Seeder
             AdminSeeder::class,
             PostulanteSeeder::class,
             CoordinadorDocentesSeeder::class,
+            MateriaSeeder::class,
+            AulaSeeder::class,
+            HorarioSeeder::class,
+            CalificacionMasivaSeeder::class,
         ]);
     }
 }

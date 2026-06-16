@@ -194,39 +194,47 @@
     <div class="app">
         <aside class="sidebar">
             <h2>Sistema CUP</h2>
-            <p>Examen de Suficiencia Académica</p>
+            <p>Curso Pre-Universitario</p>
 
             <nav class="menu">
                 <div class="menu-title">Menú principal</div>
 
                 @if(auth()->user()->rol->nombre === 'Administrador')
                     <a href="{{ route('dashboard.admin') }}">Dashboard</a>
+                    {{-- <a href="#">Usuarios</a> --}}
                     <a href="{{ route('postulantes.index') }}">Gestionar postulantes</a>
                     <a href="{{ route('docentes.index') }}">Gestionar docentes</a>
-                    <a href="#">Asignación académica</a>
+                    <a href="{{ route('admin.grupos') }}">Grupos</a>
+                    <a href="{{ route('admin.asignacion-cupos') }}">Asignacion Cupos</a>
+                    <a href="{{ route('admin.asignacion-academica') }}">Asignación académica</a>
                     <a href="{{ route('reportes.postulantes.lista-general') }}">Reportes</a>
+                    <a href="#">Bitácora</a>
+                    {{-- <a href="#">Configuración</a> --}}
                 @endif
 
                 @if(auth()->user()->rol->nombre === 'Coordinador')
                     <a href="{{ route('dashboard.coordinador') }}">Dashboard</a>
                     <a href="{{ route('docentes.index') }}">Grupos habilitados</a>
-                    <a href="#">Asignación docente</a>
-                    <a href="#">Reportes académicos</a>
+                    <a href="{{ route('admin.asignacion-academica') }}">Asignación academica</a>
+                    <a href="{{ route('admin.asignacion-cupos') }}">Asignacion Cupos</a>
+                    {{-- <a href="#">Docentes por Grupo</a> --}}
                     <a href="{{ route('reportes.postulantes.lista-general') }}">Reportes</a>
+                    <a href="#">Supervisión</a>
                 @endif
 
                 @if(auth()->user()->rol->nombre === 'Docente')
                     <a href="{{ route('dashboard.docente') }}">Dashboard</a>
-                    <a href="#">Mis grupos</a>
-                    <a href="#">Registrar notas</a>
-                    <a href="#">Calificaciones</a>
+                    <a href="{{ route('docente.mis-grupos') }}">Mis grupos</a>
+                    <a href="{{ route('docente.notas') }}">Registrar notas</a>
+                    <a href="{{ route('docente.calificaciones') }}" >Calificaciones</a>
+                    <a href="{{ route('docente.resultados') }}">Resultados</a>
+                    
                 @endif
 
                 @if(auth()->user()->rol->nombre === 'Postulante')
                     <a href="{{ route('dashboard.postulante') }}">Dashboard</a>
-                    <a href="#">Mi inscripción</a>
-                    <a href="#">Mis documentos</a>
-                    <a href="#">Mis resultados</a>
+                    {{-- <a href="#">Mi inscripción</a> --}}
+                    
                 @endif
             </nav>
 

@@ -18,6 +18,7 @@ return new class extends Migration
                 ->cascadeOnDelete();
 
             $table->foreignId('carrera_id')
+                ->nullable()
                 ->constrained('carrera')
                 ->cascadeOnUpdate()
                 ->restrictOnDelete();
@@ -29,9 +30,12 @@ return new class extends Migration
             $table->integer('posicion_ranking')->nullable();
 
             $table->enum('estado', [
-                'asignado',
+                'primera_opcion',
+                'segunda_opcion',
+                'aprobado_sin_cupo',
+                'reprobado',
                 'anulado',
-            ])->default('asignado');
+            ])->default('primera_opcion');
 
             $table->timestamps();
         });
