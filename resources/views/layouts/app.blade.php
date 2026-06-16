@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -189,6 +190,7 @@
         }
     </style>
 </head>
+
 <body>
 
     <div class="app">
@@ -199,7 +201,7 @@
             <nav class="menu">
                 <div class="menu-title">Menú principal</div>
 
-                @if(auth()->user()->rol->nombre === 'Administrador')
+                @if (auth()->user()->rol->nombre === 'Administrador')
                     <a href="{{ route('dashboard.admin') }}">Dashboard</a>
                     {{-- <a href="#">Usuarios</a> --}}
                     <a href="{{ route('postulantes.index') }}">Gestionar postulantes</a>
@@ -208,33 +210,35 @@
                     <a href="{{ route('admin.asignacion-cupos') }}">Asignacion Cupos</a>
                     <a href="{{ route('admin.asignacion-academica') }}">Asignación académica</a>
                     <a href="{{ route('reportes.postulantes.lista-general') }}">Reportes</a>
-                    <a href="#">Bitácora</a>
+                    <a href="{{ route('admin.estadisticas-calificaciones') }}" class="menu-link">
+                        Estadísticas de Calificaciones
+                    </a>
                     {{-- <a href="#">Configuración</a> --}}
                 @endif
 
-                @if(auth()->user()->rol->nombre === 'Coordinador')
+                @if (auth()->user()->rol->nombre === 'Coordinador')
                     <a href="{{ route('dashboard.coordinador') }}">Dashboard</a>
                     <a href="{{ route('docentes.index') }}">Grupos habilitados</a>
                     <a href="{{ route('admin.asignacion-academica') }}">Asignación academica</a>
                     <a href="{{ route('admin.asignacion-cupos') }}">Asignacion Cupos</a>
                     {{-- <a href="#">Docentes por Grupo</a> --}}
                     <a href="{{ route('reportes.postulantes.lista-general') }}">Reportes</a>
-                    <a href="#">Supervisión</a>
+                    <a href="{{ route('admin.estadisticas-calificaciones') }}" class="menu-link">
+                        Estadísticas de Calificaciones
+                    </a>
                 @endif
 
-                @if(auth()->user()->rol->nombre === 'Docente')
+                @if (auth()->user()->rol->nombre === 'Docente')
                     <a href="{{ route('dashboard.docente') }}">Dashboard</a>
                     <a href="{{ route('docente.mis-grupos') }}">Mis grupos</a>
                     <a href="{{ route('docente.notas') }}">Registrar notas</a>
-                    <a href="{{ route('docente.calificaciones') }}" >Calificaciones</a>
+                    <a href="{{ route('docente.calificaciones') }}">Calificaciones</a>
                     <a href="{{ route('docente.resultados') }}">Resultados</a>
-                    
                 @endif
 
-                @if(auth()->user()->rol->nombre === 'Postulante')
+                @if (auth()->user()->rol->nombre === 'Postulante')
                     <a href="{{ route('dashboard.postulante') }}">Dashboard</a>
                     {{-- <a href="#">Mi inscripción</a> --}}
-                    
                 @endif
             </nav>
 
@@ -263,4 +267,5 @@
     </div>
 
 </body>
+
 </html>

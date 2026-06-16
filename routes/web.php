@@ -7,6 +7,7 @@ use App\Http\Controllers\DocenteCalificacionController;
 use App\Http\Controllers\DocenteController;
 use App\Http\Controllers\DocenteGrupoController;
 use App\Http\Controllers\DocenteResultadoController;
+use App\Http\Controllers\EstadisticaCalificacionController;
 use App\Http\Controllers\GrupoController;
 use App\Http\Controllers\NotaDocenteController;
 use App\Http\Controllers\PostulanteController;
@@ -81,6 +82,8 @@ Route::middleware(['auth', 'role:Administrador,Coordinador'])->group(function ()
     Route::get('/reportes/postulantes/lista-general', [ReportePostulanteController::class, 'index'])
         ->middleware('auth')
         ->name('reportes.postulantes.lista-general');
+    Route::get('/admin/estadisticas-calificaciones', [EstadisticaCalificacionController::class, 'index'])
+        ->name('admin.estadisticas-calificaciones');
 });
 
 // //////////////////////   COORDINADOR    ///////////////////////////////////////////////////
